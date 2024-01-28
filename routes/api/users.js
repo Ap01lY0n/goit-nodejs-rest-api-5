@@ -1,20 +1,23 @@
 const express = require('express');
-const { validateBody, authenticate, upload } = require('../../middlewares');
-const { favoriteSchema } = require('../../models');
-const { changeSubscription, getCurrent, changeAvatar } = require('../../controllers/users');
+const { validateBody, authenticate } = require('../../middlewares');
+const { favoriteSchema, updateAvatarSchema } = require('../../models');
+const { changeSubscription, getCurrent, updateAvatar } = require('../../controllers/users');
 const { ctrlWrapper } = require('../../utils');
+const { upload } = require('../../middlewares/upload');
 
 const usersRouter = express.Router();
+const wrappedUpdateAvatar = ctrlWrapper(updateAvatar);
 
 usersRouter.patch('/', authenticate, validateBody(favoriteSchema), ctrlWrapper(changeSubscription));
 
 usersRouter.get('/current', authenticate, ctrlWrapper(getCurrent));
 
 usersRouter.patch(
-	'/avatar',
-	authenticate,
-	upload.single('avatar'),
-	ctrlWrapper(changeAvatar)
-);
+    '/avatars',
+    authenticate,
+    validateBody(updateAvatarSchema),
+    upload.single('avatar'),
+    wrappedUpdateAvatar,
+  );
 
 module.exports = usersRouter;

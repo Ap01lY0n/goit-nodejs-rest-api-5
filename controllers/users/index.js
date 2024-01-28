@@ -1,8 +1,7 @@
-const { changeSubscription, getCurrent } = require('./users.js');
-const changeAvatar = require('./changeavatar.js');
+const { changeSubscription, getCurrent, updateAvatar } = require('./users.js');
 
 module.exports = {
 	changeSubscription,
 	getCurrent,
-	changeAvatar,
+	updateAvatar,
 };

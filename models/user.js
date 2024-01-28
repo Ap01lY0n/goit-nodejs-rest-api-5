@@ -62,6 +62,9 @@ const favoriteSchema = Joi.object({
 		.valid(...typeSubscription)
 		.required(),
 });
+const updateAvatarSchema = Joi.object({
+	payload: { files: Joi.array().items(Joi.any()) },
+  });
 
 const User = model('user', userRegisterSchema);
 
@@ -70,4 +73,5 @@ module.exports = {
 	registerSchema,
 	loginSchema,
 	favoriteSchema,
+	updateAvatarSchema,
 };
