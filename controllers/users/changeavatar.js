@@ -1,4 +1,3 @@
-const path = require('path');
 const admin = require('firebase-admin');
 const fs = require('fs').promises;
 const Jimp = require('jimp');
@@ -47,7 +46,8 @@ const changeAvatar = async ({ user, file }, res, next) => {
     const { _id } = user;
 
     if (!file) {
-      throw HttpError(406, 'Error loading avatar');
+      console.error('Error: No file provided');
+      throw new HttpError(406, 'Error loading avatar');
     }
 
     const { path: tempUpload, originalname } = file;
@@ -65,9 +65,13 @@ const changeAvatar = async ({ user, file }, res, next) => {
       },
     });
 
-    const uniqueFilename = `${user._id}_${Date.now()}${path.extname(originalname)}`;
+    // Retrieve the signed URL after saving the file
+    const [url] = await firebaseFile.getSignedUrl({
+      action: 'read',
+      expires: '01-01-2035',
+    });
 
-    const avatarURL = `/avatars/${uniqueFilename}`;
+    const avatarURL = url;
 
     await User.findByIdAndUpdate(_id, { avatarURL });
     await fs.unlink(tempUpload);
@@ -75,9 +79,11 @@ const changeAvatar = async ({ user, file }, res, next) => {
     res.json({
       avatarURL,
     });
+
+    console.log('Avatar processed successfully');
   } catch (error) {
     console.error('Error in changeAvatar:', error);
-    next(HttpError(500, 'Internal Server Error'));
+    next(new HttpError(500, 'Internal Server Error'));
   }
 };
 
