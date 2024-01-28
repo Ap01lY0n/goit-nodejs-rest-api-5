@@ -6,4 +6,4 @@ const adjustingAvatar = async path => {
   return await image.resize(250, 250).writeAsync(path);
 };
 
-module.exports = adjustingAvatar;
+module.exports = { adjustingAvatar };

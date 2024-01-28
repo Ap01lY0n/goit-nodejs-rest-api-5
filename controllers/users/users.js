@@ -1,7 +1,7 @@
 const path = require('path');
 const { User } = require('../../models');
 const { HttpError } = require('../../utils/HttpError');
-const { adjustingAvatar } = require('../../utils/adjustAvatar.js')
+const { adjustingAvatar } = require('../../utils/adjustAvatar')
 const { rename } = require('node:fs/promises');
 
 const changeSubscription = async ({ user, body }, res) => {
@@ -31,7 +31,7 @@ const getCurrent = async ({ user }, res) => {
 const avatarsDir = path.resolve('public/avatars');
 const updateAvatar = async (req, res, next) => {
 	const { _id: user } = req.user;
-	
+	try{
 		if (req.file === undefined)
 		throw HttpError(404, 'Image was not found, check form-data values');
 		const { path: tempUpload, originalname } = req.file;
@@ -46,6 +46,10 @@ const updateAvatar = async (req, res, next) => {
 		await User.findByIdAndUpdate(user, { avatarURL });
 		
 		res.json({ avatarURL });
+		}catch (error) {
+			console.error('Error in updateAvatar:', error);
+			next(new HttpError(500, 'Internal Server Error'));
+		  }
 };
 
 module.exports = {
