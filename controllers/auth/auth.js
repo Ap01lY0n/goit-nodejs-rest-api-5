@@ -3,7 +3,7 @@ const jwt = require('jsonwebtoken');
 const gravatar = require('gravatar');
 
 const { User } = require('../../models');
-const { HttpError } = require('../../utils');
+const HttpError = require('../../utils');
 
 const SECRET_KEY = process.env.SECRET_KEY;
 const register = async ({ body }, res) => {

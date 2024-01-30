@@ -1,22 +1,10 @@
 const path = require('path');
 const { User } = require('../../models');
-const { HttpError } = require('../../utils/HttpError');
-const { adjustingAvatar } = require('../../utils/adjustAvatar')
+const HttpError = require('../../utils/HttpError');
+const { adjustingAvatar } = require('../../utils/adjustAvatar');
 const { rename } = require('node:fs/promises');
 
-const changeSubscription = async ({ user, body }, res) => {
-	const { _id: id } = user;
-	const { subscription } = body;
-
-	const currentUser = subscription
-		? await User.findByIdAndUpdate(id, { subscription }, { new: true })
-		: user;
-
-	res.json({
-		email: currentUser.email,
-		subscription: currentUser.subscription,
-	});
-};
+const avatarsDir = path.resolve('public/avatars');
 
 const getCurrent = async ({ user }, res) => {
 	const { _id: id } = user;
@@ -28,32 +16,44 @@ const getCurrent = async ({ user }, res) => {
 		subscription: currentUser.subscription,
 	});
 };
-const avatarsDir = path.resolve('public/avatars');
+
+const changeSubscription = async (req, res, next) => {
+  const { _id: user } = req.user;
+  const userSubscription = await User.findByIdAndUpdate(user, req.body, {
+    new: true,
+  });
+
+  if (!userSubscription) return next();
+
+  const { email, subscription } = userSubscription;
+
+  res.status(200).json({
+    email,
+    subscription,
+  });
+}
+
 const updateAvatar = async (req, res, next) => {
-	const { _id: user } = req.user;
-	try{
-		if (req.file === undefined)
-		throw HttpError(404, 'Image was not found, check form-data values');
-		const { path: tempUpload, originalname } = req.file;
-		
-		const filename = `${user}_${originalname}`;
-		const resultUpload = path.join(avatarsDir, filename);
-		await adjustingAvatar(tempUpload);
-		await rename(tempUpload, resultUpload);
-		
-		const avatarURL = path.join('avatars', filename);
-		
-		await User.findByIdAndUpdate(user, { avatarURL });
-		
-		res.json({ avatarURL });
-		}catch (error) {
-			console.error('Error in updateAvatar:', error);
-			next(HttpError(500, 'Internal Server Error'));
-		  }
+  const { _id: user } = req.user;
+
+  if (req.file === undefined)
+    throw new HttpError(404, 'Image was not found, check form-data values');
+  const { path: tempUpload, originalname } = req.file;
+
+  const filename = `${user}_${originalname}`;
+  const resultUpload = path.join(avatarsDir, filename);
+  await adjustingAvatar(tempUpload);
+  await rename(tempUpload, resultUpload);
+
+  const avatarURL = path.join('avatars', filename);
+
+  await User.findByIdAndUpdate(user, { avatarURL });
+
+  res.json({ avatarURL });
 };
 
 module.exports = {
-	changeSubscription,
-	getCurrent,
-	updateAvatar,
+  getCurrent,
+  changeSubscription,
+  updateAvatar,
 };
