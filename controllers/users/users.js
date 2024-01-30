@@ -48,7 +48,7 @@ const updateAvatar = async (req, res, next) => {
 		res.json({ avatarURL });
 		}catch (error) {
 			console.error('Error in updateAvatar:', error);
-			next(new HttpError(500, 'Internal Server Error'));
+			next(HttpError(500, 'Internal Server Error'));
 		  }
 };
 
