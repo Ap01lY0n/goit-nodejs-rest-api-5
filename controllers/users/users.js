@@ -37,7 +37,7 @@ const updateAvatar = async (req, res, next) => {
   const { _id: user } = req.user;
 
   if (req.file === undefined)
-    throw new HttpError(404, 'Image was not found, check form-data values');
+    throw HttpError(404, 'Image was not found, check form-data values');
   const { path: tempUpload, originalname } = req.file;
 
   const filename = `${user}_${originalname}`;
